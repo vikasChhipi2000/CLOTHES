@@ -18,6 +18,7 @@ research_notes/<title>/   raw notes from each research track
 reports/<title>.md        final synthesized report
 ```
 
-## Report
+## Reports
 
 - [Clothes in manga to anime pipeline](reports/Clothes%20in%20manga%20to%20anime%20pipeline.md)
+- [Solo 3D anime clothes in Unreal](reports/Solo%203D%20anime%20clothes%20in%20Unreal.md) – one-person, no-training plan for clothing an existing 3D body in UE5
