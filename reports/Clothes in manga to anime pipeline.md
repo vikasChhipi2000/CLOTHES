@@ -1,6 +1,207 @@
 # Anchor Every Costume Before Anything Moves
 
-Whether the work is done by hand or with AI, clothes in a manga-to-anime adaptation stay consistent for one reason: someone fixes a costume specification before animation starts and checks every later drawing against it. That specification is a human-approved model sheet (settei) plus a color-design palette. Traditional studios simplify manga costumes into these sheets mainly for economic reasons. Animators are paid per drawing (in-betweens run roughly **¥280–400 per drawing**) no matter how many folds, checks or ribbons each drawing contains. Because manga is monochrome, a color designer has to invent the palette, starting from the author's color pages and rules of thumb such as "solid black becomes a dark color." In 2026 no single AI system carries clothing from a manga page to finished animation. Each stage has a good component: Magi for parsing pages, SAM 3 and See-through for segmentation and layering, WD14-style taggers for garment attributes, Cobra and paint-bucket colorizers for color, and AniDoc, ToonComposer and LongAnimation for line-art video. Two gaps remain. No public dataset labels garments in screentoned manga, and free video generators still let patterns and accessories drift. The most reliable AI design copies the human approach: keep garment geometry from line art drawn by an artist and use models only to assign colors from an approved palette. For cloth motion, the deciding question is who draws the fold shapes. A human (hand-drawn work, or hand-keyed 3D as in *Guilty Gear Xrd*) gives an authentic anime look at high labor cost. A solver (physics, pendulum rigs, diffusion) is cheap per shot but gives generic motion that still has to be stylized. A 3–5 person team can realistically build a costume-continuity and palette-enforcement tool in about 12 weeks from commercially licensed parts. GPU cost is small, on the order of **$400–1,700 to generate video for one episode**, against traditional episode budgets of **$160k–320k**. The real constraints are human review time, model licenses (many of the best models are non-commercial) and an adaptation contract that explicitly permits training.
+Whether the work is done by hand or with AI, clothes in a manga-to-anime adaptation stay consistent for one reason: someone fixes a costume specification before animation starts and checks every later drawing against it. That specification is a human-approved model sheet (settei) plus a color-design palette. Traditional studios simplify manga costumes into these sheets mainly for economic reasons. Animators are paid per drawing (in-betweens run roughly **¥280–400 per drawing**) no matter how many folds, checks or ribbons each drawing contains. Because manga is monochrome, a color designer has to invent the palette, starting from the author's color pages and rules of thumb such as "solid black becomes a dark color." In 2026 no single AI system carries clothing from a manga page to finished animation. Each stage has a good component: Magi for parsing pages, SAM 3 and See-through for segmentation and layering, WD14-style taggers for garment attributes, Cobra and paint-bucket colorizers for color, and AniDoc, ToonComposer and LongAnimation for line-art video. Two gaps remain. No public dataset labels garments in screentoned manga, and free video generators still let patterns and accessories drift. The most reliable AI design copies the human approach: keep garment geometry from line art drawn by an artist and use models only to assign colors from an approved palette. For cloth motion, the deciding question is who draws the fold shapes. A human (hand-drawn work, or hand-keyed 3D as in *Guilty Gear Xrd*) gives an authentic anime look at high labor cost. A solver (physics, pendulum rigs, diffusion) is cheap per shot but gives generic motion that still has to be stylized. A 3–5 person team can realistically build a costume-continuity and palette-enforcement tool in about 12 weeks from commercially licensed parts. GPU cost is small, on the order of **$400–1,700 to generate video for one episode**, against traditional episode budgets of **$160k–320k**. The real constraints are human review time, model licenses (many of the best models are non-commercial) and an adaptation contract that explicitly permits training. The first section compares eight named recipes for making anime clothes from manga with full control over design, color, pattern and motion. For a solo creator or small team it recommends line art kept as control, palette-driven colorization and a 2D rig or short line-art video clips. For a commercial studio it recommends human settei and key animation, with AI enforcing color and assisting in-betweens under quality checks.
+
+## Eight ways to create anime clothes the way you want
+
+"The way we want" means four kinds of control: over **design** (silhouette, construction, details), **color** (exact palette per garment region and lighting), **pattern** (plaid, emblems, prints that stay locked to folds) and **motion** (how fabric drags, flutters and settles). The recipes below differ mainly in who authors each of the four: a human, a structural condition such as line art, or a generative model. The later sections give the evidence behind each recipe in detail.
+
+### (A) Fully traditional: hand-drawn settei, color design and 2D animation
+
+**How it works.**
+
+1. The character designer (or a dedicated costume designer) turns the manga outfits into settei: turnarounds, construction details and accessories, with fewer lines, colors and ornaments than the manga.
+2. The color designer builds normal, shadow and highlight palettes plus evening and night variants. Where no color page exists, solid black becomes a dark color.
+3. Key animators draw the cloth, including drag, follow-through and nabiki (cloth flapping in wind).
+4. Animation directors correct drawings against the settei.
+5. In-betweeners and painters finish; the per-episode color coordinator (色指定) supplies the color models.
+
+**Tools:** paper or Clip Studio Paint, TVPaint, Harmony, OpenToonz.
+
+**Control and consistency:** control is total across all four dimensions, because every fold is a human decision. Consistency depends on the correction passes; outfit errors are a recognized category of drawing mistake.
+
+**Cost:** high per shot. In-betweens are paid about ¥280–400 per drawing whatever their complexity ([Levtech Creator](https://creator.levtech.jp/tips/article/195/)). Patterns can be brute-forced, as with *Demon Slayer*'s hand-counted checks ([Togetter](https://togetter.com/li/1614752)), but at a large labor cost.
+
+**License:** no model-license issues. It still needs the adaptation license.
+
+**Best use:** hero cuts, emotional close-ups, and any shot where fold logic or a pattern must read perfectly.
+
+### (B) Manga line art as control, colorized against an outfit color bible
+
+**How it works.**
+
+1. Restore the scans and extract clean lines; MangaLineExtraction strips screentone ([GitHub](https://github.com/ljsabc/MangaLineExtraction_PyTorch)). Alternatively, have an artist clean the panels into animation line art.
+2. Build a color bible per (character, outfit): an exact hex value for each region, from the author's color pages or a human color designer.
+3. Colorize with a reference model. Options:
+   - **Cobra**: more than 200 references, Apache-2.0 weights ([GitHub](https://github.com/zhuang2002/Cobra)).
+   - **ColorFlow**: retrieves references per panel for consistent attire; Academic license ([project](https://zhuang2002.github.io/ColorFlow/)).
+   - **MangaNinja**: point control, so a human can pin a jacket in the reference to the same jacket in the target; CC BY-NC 4.0, 512² ([GitHub](https://github.com/ali-vilab/MangaNinjia)).
+   - **Paint-bucket methods**: these fill each closed region with the exact color-sheet RGB ([arXiv 2410.19424](https://arxiv.org/html/2410.19424v1); [DACoN](https://openaccess.thecvf.com/content/ICCV2025/papers/Nagata_DACoN_DINO_for_Anime_Paint_Bucket_Colorization_with_Any_Number_ICCV_2025_paper.pdf)).
+4. Run palette checks using color difference (ΔE) per region.
+
+**Control and consistency:** design and pattern stay exactly as drawn, because the model never redraws geometry. Color control is very high with paint-bucket fills and high with diffusion colorizers, which can repaint small accessories. Consistency across a chapter is the best of any AI recipe when every panel uses the same per-outfit references.
+
+**Cost:** low. MangaNinja runs on about 6 GB of VRAM, and the main labor is line cleanup and palette design.
+
+**License:** use Cobra or paint-bucket methods for commercial work. MangaNinja and ColorFlow are for prototypes only.
+
+**Best use:** color keys, model sheets, still or limited-motion content, and the color-enforcement stage of every other recipe.
+
+### (C) Anime base model + per-outfit LoRA + line-art ControlNet
+
+**How it works.**
+
+1. Curate the approved model sheets and colored panels for each outfit.
+2. Caption them with a fixed Danbooru tag block per costume, pruning generic color tags to limit bleed ([lora-dataset-studio](https://github.com/perfectgf/lora-dataset-studio/blob/v1/docs/DATASET_GUIDE.md)).
+3. Train an outfit or character LoRA: about 1,500–2,500 SDXL steps on 10–24 GB, or about $8 per 1,000 steps hosted ([bestaiweb](https://www.bestaiweb.ai/how-to-train-a-custom-lora-for-flux-and-sdxl-with-kohya-ss-ai-toolkit-and-fal-ai-in-2026/)).
+4. Generate new poses or panels with line-art or pose ControlNet holding the structure.
+5. Snap colors to the bible (recipe B).
+
+**Control and consistency:** design control is high when line art conditions generation and medium with pose-only control. Patterns and emblems drift without line art. Consistency is good for a single outfit, but multi-outfit LoRAs "can still show bleedthrough" ([hollowstrawberry guide](https://huggingface.co/hollowstrawberry/stable-diffusion-guide/discussions/7)), so keep one costume asset per shot.
+
+**Cost:** low, about $250–750 of training for 30–50 outfits per series (my estimate).
+
+**License:** the base model decides. Animagine XL 4.0 (OpenRAIL++-M) and Neta Lumina (Apache-2.0) are workable ([HF](https://huggingface.co/cagliostrolab/animagine-xl-4.0); [HF](https://huggingface.co/neta-art/Neta-Lumina/blob/main/README.md)). NoobAI-XL forbids commercializing outputs ([model card](https://huggingface.co/Laxhar/noobai-XL-1.1/raw/main/README.md)). Training on the manga needs the rights holder's explicit permission.
+
+**Best use:** new keyframes, poses and angles the manga never drew, and promotional art.
+
+### (D) Zero-shot multi-reference editors for outfit design and swaps
+
+**How it works.** Feed a character image plus garment references to an in-context editor, prompt the change ("same outfit, sitting, back view" or "swap to outfit B"), then correct and recolor. Editors and their reference limits:
+
+- FLUX.1 Kontext.
+- FLUX.2: up to 10 references ([BFL](https://bfl.ai/blog/flux-2)).
+- Qwen-Image-Edit-2509/2511: 1–3 inputs, accepts ControlNet maps ([HF](https://huggingface.co/Qwen/Qwen-Image-Edit-2509)).
+- Nano Banana Pro: up to 14 references ([Scenario](https://help.scenario.com/articles/7568607761-gemini-image-models-nano-banana-family)).
+
+**Control and consistency:** no training needed, and iteration is fast. Control is only medium, and small costume details are the weak point. Gemini failed a clothing-extraction test in one informal comparison ([HF blog](https://huggingface.co/blog/MonsterMMORPG/nano-banana-gemini-25-flash-image-full-tutorial)). Kontext's published consistency score is a face metric ([arXiv 2506.15742](https://arxiv.org/html/2506.15742v2)).
+
+**Cost:** cheap per image, either API fees or a local GPU.
+
+**License:** Qwen-Image code is Apache-2.0. FLUX [dev] weights are non-commercial unless you buy a license, and FLUX Pro and Gemini are paid APIs. Photographic try-on models (IDM-VTON, CatVTON and others) are CC BY-NC-SA and suit flat-shaded anime poorly ([IDM-VTON](https://github.com/yisol/IDM-VTON)).
+
+**Best use:** costume design exploration, quick variants and states (jacket off, wet), and drafts that a designer then redraws into settei.
+
+### (E) Layered 2D rig: See-through layers into Live2D or Spine physics
+
+**How it works.**
+
+1. Colorize a key pose (recipe B).
+2. Decompose it with **See-through** into up to 23 inpainted layers, including clothing and accessories, exported as a PSD. It is Apache-2.0 and runs in 8–12 GB with low-VRAM variants ([GitHub](https://github.com/shitagaki-lab/see-through)).
+3. Cut the garment parts (skirt panels, ribbons, sleeve ends).
+4. Rig them in Live2D Cubism, whose physics groups include "swinging skirt" with pendulum reaction, amplitude, weight and convergence settings ([Live2D manual](https://docs.live2d.com/4.2/en/cubism-editor-manual/physics-operation/)). Alternatives are Spine 4.2 physics constraints ([Esoteric](http://en.esotericsoftware.com/spine-physics-constraints)) or Harmony's Envelope and Curve deformers for capes ([Harmony docs](https://docs.toonboom.com/help/harmony-24/premium/master-controller/about-deformer-on-deformer.html)).
+
+**Control and consistency:** design, color and pattern are frozen in the art, so consistency is perfect. Motion is automatic sway inside the drawn range, with no true turnarounds or new folds.
+
+**Cost:** a medium one-time rig build, then nearly free per shot.
+
+**License:** See-through is Apache-2.0. Live2D, Spine and Harmony are paid tools.
+
+**Best use:** VTuber-style content, visual novels, motion comics, dialogue scenes, and small-team series with limited camera angles.
+
+### (F) 3D garment route: patterns or meshes, cloth sim, toon shader
+
+**How it works.**
+
+1. Build the garment from the settei turnarounds, by one of three routes:
+   - Sew it as a pattern in Marvelous Designer or CLO, which now has a Toon Shader preview ([CG Channel](https://www.cgchannel.com/2026/04/clo-virtual-fashion-releases-marvelous-designer-2026-0/)).
+   - Draft a pattern with **ChatGarment**, which outputs GarmentCode JSON from images or sketches, then correct it by hand ([CVPR 2025](https://openaccess.thecvf.com/content/CVPR2025/papers/Bian_ChatGarment_Garment_Estimation_Generation_and_Editing_via_Large_Language_Models_CVPR_2025_paper.pdf)).
+   - Start from a **StdGEN** clothes mesh, separated from body and hair in about 3 minutes ([GitHub](https://github.com/hyz317/StdGEN)).
+2. Simulate in Houdini Vellum, Blender, Unreal Chaos Cloth (production-ready in UE 5.8) or Magica Cloth. Use bone chains or VRM SpringBone for cheap real-time skirts.
+3. Stylize so it reads as anime: coarser wrinkles, edited normals, retiming to twos or threes. Use the ghost-frame trick for stable sims on twos ([Cartoon Brew](https://www.cartoonbrew.com/feature-film/if-its-not-broke-break-it-sony-imageworks-renegade-approach-to-spider-man-into-the-spider-verse-167321.html)), or hand-keyed model swaps as on *Guilty Gear Xrd* ([BlenderNation](https://www.blendernation.com/2015/07/26/junya-c-motomura-behind-the-scenes-of-guilty-gear-xrd/)).
+4. Render with Pencil+ 4 or Unity Toon Shader (UTS3).
+
+**Control and consistency:** a modeled costume is perfectly consistent from any angle and reusable across a franchise, as with *Love Live!*'s modeled live costumes ([Wikipedia JA](https://ja.wikipedia.org/wiki/%E3%82%B5%E3%83%B3%E3%82%B8%E3%82%B2%E3%83%B3)). Patterns become textures that follow folds exactly. Motion control is high when keyed. Raw simulation looks "CG."
+
+**Cost:** high up front. *Trigun Stampede*'s CG modeling began 3–4 years before broadcast ([ComicBook.com](https://comicbook.com/anime/news/trigun-stampede-team-interview-cg-animation-talk/)). Per-shot cost is medium.
+
+**License:** mostly commercial software. Research pattern tools are unproven on anime.
+
+**Best use:** idol and dance lives, crowds, action wide shots, games, and long franchises that amortize the assets.
+
+### (G) Line-art video methods for motion
+
+**How it works.**
+
+1. Humans draw key sketches. AI fills the in-betweens and color while conditioning every window on the same outfit reference sheet. Options:
+   - **ToonCrafter**: interpolation, 512×320, 16 frames ([GitHub](https://github.com/Doubiiu/ToonCrafter)).
+   - **AniDoc**: sketch-sequence colorization from a design reference, 14 frames, about 14 GB ([GitHub](https://github.com/yihao-meng/AniDoc)).
+   - **LVCD**.
+   - **ToonComposer**: one sketch plus one colored frame ([arXiv 2508.10881](https://arxiv.org/abs/2508.10881)).
+   - **LongAnimation**: color stability over about 500 frames ([arXiv 2507.01945](https://arxiv.org/abs/2507.01945)).
+2. Reduce the output to the show's timing (twos or threes).
+3. Clean up by hand and snap colors to the palette.
+
+**Control and consistency:** design is held by the sketches, so garments cannot change shape between keys. Color consistency is good within a window and weakest at window seams on long shots. Large cape and skirt arcs need dense keys ([arXiv 2508.10881](https://arxiv.org/pdf/2508.10881)).
+
+**Cost:** low GPU cost plus cleanup labor.
+
+**License:** the code is Apache-2.0, but AniDoc and LVCD depend on Stable Video Diffusion weights, and ToonCrafter calls itself a "research exploration," so check base weights before commercial use. Free generators such as Wan 2.2 (Apache-2.0) are fine for B-roll but let garments drift.
+
+**Best use:** in-betweening assistance and short limited-motion shots with small secondary cloth motion.
+
+### (H) The hybrid pipeline
+
+**How it works.**
+
+1. A human-approved outfit bible (settei, palette, accessory counts, license fields) is the only source of truth (recipe A's front end).
+2. CV tools detect characters and outfit changes in the manga to populate it.
+3. Recipe D drafts designs and C generates new angles, but only the designer's redrawn sheets become canonical.
+4. Key animation stays human for hero cuts.
+5. Recipe G assists in-betweens.
+6. Recipe B paint-bucket enforcement locks colors on every frame.
+7. Recipe F handles crowd and dance wide shots, and recipe E handles low-budget dialogue content.
+8. Automated QA runs on every cut, followed by a human color check.
+
+**Control and consistency:** control is total where it matters, because a human authors design and key motion and data enforces color. Consistency is the highest available, since every stage reads the same bible.
+
+**Cost:** medium. GPU spend is small, and review labor dominates.
+
+**License:** it is built only from commercially licensed parts, with a license register.
+
+**Best use:** any serious adaptation.
+
+### Comparison
+
+| Recipe | Design control | Color control | Pattern fidelity | Motion control | Consistency | Cost / time | Commercial license status | Best use |
+|---|---|---|---|---|---|---|---|---|
+| A Traditional hand-drawn | Total | Total | Total but costly | Total | Depends on correction passes | Highest labor | Clean (needs adaptation license) | Hero cuts, flagship TV/film |
+| B Line art + reference colorization | Exact (inherited) | Very high (paint-bucket) to high (diffusion) | Exact lines; color may slip on tiny parts | None by itself | Best AI option for color | Low | Cobra, paint-bucket OK; MangaNinja, ColorFlow non-commercial | Color stage of every pipeline |
+| C Anime base + outfit LoRA + ControlNet | High with line art | High after snapping | Medium; drifts without line art | Stills only | Good per outfit; bleed across outfits | Low (~$8–15 per LoRA) | Animagine, Neta Lumina OK; NoobAI no | New poses and angles, promo art |
+| D Multi-reference editors | Medium | Medium | Low–medium | Stills only | Medium; details drop | Very low, fast | Qwen Apache code; FLUX/Gemini license or API; try-on models non-commercial | Design exploration, variants |
+| E Layered 2D rig | Frozen art | Frozen | Exact | Low (sway in range) | Perfect within range | Medium setup, ~zero per shot | See-through Apache; paid rig tools | Motion comics, VTuber-style, dialogue |
+| F 3D garment + toon shader | High | Exact (texture) | Exact, follows folds | High if keyed; generic if raw sim | Perfect from any angle | Very high up front, medium per shot | Commercial DCC tools | Idol lives, crowds, action, games |
+| G Line-art video | Held by keys | Good within windows | Held by keys; can swim | Medium; needs dense keys for big arcs | Good; seams on long shots | Low GPU + cleanup | Check base weights (SVD, CogVideoX) | In-between assist, short shots |
+| H Hybrid | Total where it matters | Exact (enforced) | High | High | Highest | Medium; review dominates | Commercial-only stack | Any serious adaptation |
+
+### Recommendations
+
+**Solo creator or small team (1–5 people).** Use **B + E, with G for selected shots and D/C as design aids**.
+
+1. Clean the manga panels into line art.
+2. Hand-define one color bible per outfit.
+3. Colorize with Cobra or a paint-bucket method so colors are exact. MangaNinja and ColorFlow are acceptable only for non-commercial or research work.
+4. Animate mainly with See-through layers rigged in Live2D or Spine. Garments then never drift, and skirt and ribbon motion comes free from physics.
+5. Use AniDoc or ToonComposer for a handful of short motion shots.
+6. Use Qwen-Image-Edit or an Animagine/Neta Lumina outfit LoRA with line-art ControlNet to draft angles the manga never drew, then redraw or approve them before they enter the bible.
+
+This stack runs on one or two 24 GB consumer GPUs, keeps training costs to tens or hundreds of dollars, and trades motion richness for near-perfect costume consistency.
+
+**Commercial studio.** Use **H with A as the backbone**.
+
+- Human costume and character designers produce settei, and a color designer owns the palette.
+- Key animation stays human.
+- AI is limited to:
+  - CV-based costume continuity tracking;
+  - paint-bucket color enforcement against the bible (recipe B);
+  - in-between assistance with human keys (recipe G);
+  - 3D garments for idol, crowd and action wide shots (recipe F).
+- Automated QA on every cut, with per-cut provenance logs.
+- Only commercially licensed components (Wan 2.2, Cobra, See-through, Animagine or Neta Lumina, or paid FLUX and Kling licenses), recorded in a model-license register.
+- No NoobAI, MangaNinja, ColorFlow, photographic try-on models or HunyuanVideo in shipped work.
+- An adaptation contract with an explicit AI-training clause.
+
+This matches where industry evidence already points. Toei targeted color specification and in-betweens, not design ([Gizmodo](https://gizmodo.com/animation-studio-toei-wants-to-use-ai-for-future-productions-2000603817)). WIT's 2026 apology shows that undocumented AI use is itself a production risk ([ANN](https://www.animenewsnetwork.com/news/2026-04-10/wit-studio-apologizes-for-using-generative-ai-in-opening-sequence-of-ascendance-of-a-bookworm-part-/.236271)).
 
 ## Studios simplify costumes because animators are paid per drawing
 
