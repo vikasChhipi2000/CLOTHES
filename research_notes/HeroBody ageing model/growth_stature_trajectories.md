@@ -6,7 +6,7 @@ Access notes. This session could reach only GitHub (github.com, raw.githubuserco
 - **Fetched (primary data and code):**
   - LMS tables for WHO 2006 (0-5 y), WHO 2007 (5-19 y), CDC 2000 (0-20 y, with the CDC extended-BMI sigma column) and UK90. These came as JSON inside the `rcpchgrowth` 4.6.5 wheel from PyPI (RCPCH, AGPL-3.0 code; the numbers are the WHO/CDC/UK90 values).
   - WHO's own z-score code from the official GitHub repos `WorldHealthOrganization/anthro` and `anthroplus`.
-  - The SITAR model code and the Berkeley Growth Study raw data (66 boys, 70 girls, birth to 21 y, born 1928-29), from the CRAN mirror `cran/sitar` on GitHub.
+  - The SITAR model code and the Berkeley Child Guidance Study raw data (corrected in verification: was "Berkeley Growth Study"; sitar's berkeley.Rd titles it "The Berkeley Child Guidance Study", data from Tuddenham & Snyder 1954; licence GPL (>= 2) per the sitar DESCRIPTION) (66 boys, 70 girls, birth to 21 y, born 1928-29), from the CRAN mirror `cran/sitar` on GitHub.
   - NHANES 2009-2012 raw adult anthropometry with survey weights, from the CRAN mirror `cran/NHANES`.
 - **Computed here:** every table marked "[fetched; computed here]" was calculated in Python from those files: Preece-Baines, JPA-2, ICP-like and double-logistic fits; tracking correlations; tempo effects; adult LMS by decade; the prototype growth() outputs.
 - **Snippet only:** all journal facts (Preece-Baines 1978, Karlberg ICP, JPA-2, SITAR 2010, ALSPAC, Sorkin 1999/BLSA, Dey 1999, Farkas 1992, Bushby 1992, Wright & Cheetham 1999, Mei 2004, Khamis-Roche 1994, de Onis 2007, Cole & Green 1992). These come from search-result snippets and are tagged [snippet].
@@ -60,7 +60,7 @@ Evidence for these rows:
 | s0 (1/yr) | 0.103 ± 0.007 | 0.120 ± 0.011 |
 | s1 (1/yr) | 1.036 ± 0.170 | 1.001 ± 0.147 |
 | θ (yr) | 14.11 ± 1.13 | 11.99 ± 0.91 |
-| Age at peak height velocity, APHV (yr) | 13.47 ± 1.19 | 11.14 ± 0.91 |
+| Age at peak height velocity, APHV (yr) | 13.47 ± 1.19 (verification re-fit: 13.46 ± 1.24; SD depends on how the peak is located) | 11.14 ± 0.91 |
 | Peak height velocity, PHV (cm/yr) | 8.04 ± 1.19 | 7.37 ± 0.93 |
 | Age at take-off (yr) | 9.74 ± 1.13 | 7.93 ± 0.85 |
 | Velocity at take-off (cm/yr) | 4.92 ± 0.69 | 5.54 ± 0.65 |
@@ -215,7 +215,7 @@ In the ICP-like fit, the quadratic childhood term turns over at t0 + b1/(2|b2|),
 
 ### Cited Findings
 
-**Tracking correlations and percent of adult height, Berkeley Growth Study** [fetched; computed here]. Adult height = PB1 asymptote h1. The last column is the regression of (height/adult) on APHV, which measures how much late maturers lag.
+**Tracking correlations and percent of adult height, Berkeley Child Guidance Study (corrected in verification: was "Berkeley Growth Study")** [fetched; computed here]. Verification note: the r at 16-18 y is inflated by construction, because h1 is fitted to the same child's 2-21 y heights. Adult height = PB1 asymptote h1. The last column is the regression of (height/adult) on APHV, which measures how much late maturers lag.
 
 | Age (y) | Boys r(h, adult) | Boys mean % adult (SD) | Boys Δ% per +1 y APHV | Girls r(h, adult) | Girls mean % adult (SD) | Girls Δ% per +1 y APHV |
 |---|---|---|---|---|---|---|
@@ -710,3 +710,28 @@ Snippet only (search results; primary pages blocked):
 - Farkas 1992 head and face growth: https://doi.org/10.1597/1545-1569_1992_029_0303_agsoth_2.3.co_2 ; https://journals.sagepub.com/doi/abs/10.1597/1545-1569_1992_029_0308_gpotfa_2.3.co_2
 - Head-body proportion: https://montrealchildrenshospital.ca/health-info/true-or-false-by-age-six-childrens-bodies-are-proportionately-not-very-different-from-those-of-adults/
 - Head-face standard and child anthropometry: https://www.chinesestandard.net/PDF.aspx/GBT26160-2010 ; https://math.nist.gov/~SRessler/anthrokids/child77lnk.pdf
+
+## Verification
+
+Adversarial fact-check, 2026-10-09. Access during verification: raw.githubusercontent.com and pypi.org worked. pmc/pubmed/ncbi, nature.com, adc.bmj.com, bd.dbio.uevora.pt, doaj.org, Europe PMC, Crossref, OpenAlex and Semantic Scholar were all blocked (DNS failure or proxy 403). The web-search budget for this run was already used up, so no new snippets could be gathered. Journal-only claims therefore stay **unverifiable**. That means not checked, not wrong. Every data claim was re-computed from independently downloaded files: the rcpchgrowth 4.6.5 wheel (sha256 9fb73405…94ca, identical to the researcher's copy), berkeley.rda, sitar.R and WHO anthro z-score-helper.R.
+
+| # | Claim | Verdict | Note | Source |
+|---|---|---|---|---|
+| 1 | PB1 closed form h1 − 2(h1−hθ)/(e^{s0(t−θ)}+e^{s1(t−θ)}), 5 params, 2 y to maturity | unverifiable | Paper unreachable. [inference] The form is internally consistent: it is the exact solution of dh/dt = s(h1−h) with logistic s(t) between s0 and s1, and h(θ) = hθ. It fits Berkeley children at rms 0.5-0.7 cm. | Preece & Baines 1978 PDF (blocked) |
+| 2 | Berkeley PB1 means: h1 180.0±6.6 / 166.6±6.2, s0 0.103 / 0.120, s1 1.036 / 1.001, θ 14.11±1.13 / 11.99±0.91, APHV 13.47±1.19 / 11.14±0.91, PHV 8.04±1.19 / 7.37±0.93, rms 0.67 / 0.53 | confirmed | [fetched; re-computed] An independent least-squares re-fit (ages ≥ 2 y, 66 boys / 70 girls) gives the same values to the last digit, except boys' APHV SD (1.24 vs 1.19). That SD depends on how the velocity peak is located. | cran/sitar data/berkeley.rda |
+| 2b | Dataset is the "Berkeley Growth Study" | corrected | sitar's berkeley.Rd calls it "The Berkeley Child Guidance Study" (Tuddenham & Snyder 1954). The numbers are unaffected; only the name and citation change. The data licence is GPL (>= 2). | cran/sitar man/berkeley.Rd, DESCRIPTION [fetched] |
+| 3 | SITAR y = a + spline((x−b)·exp(c)) [+ d·x] | confirmed | [fetched] sitar.R builds `ex <- (x-(b))*exp(c)`, then a + spline(ex) + d·x. With d.adjusted = TRUE the d term multiplies ex instead of x. | cran/sitar R/sitar.R |
+| 4 | WHO z = ((y/m)^l−1)/(s·l); ±3 SD linear extension using the SD2-SD3 distance; ±0.7 cm at 731 days | confirmed | [fetched] Verbatim in compute_zscore, compute_zscore_adjusted and adjust_lenhei (<731 days: H + 0.7; ≥731 days: L − 0.7). | WHO anthro R/z-score-helper.R |
+| 5a | WHO 2007: height and BMI to 19 y, weight-for-age only to 10 y | confirmed | [fetched] The WHO 2007 LMS tables in rcpchgrowth cover height 5-19 y (169 rows), BMI 5-19 y (169) and weight 5-10 y (61). The 19 y height LMS used in code is men 1 / 176.5432 / 0.04134 and women 1 / 163.1548 / 0.04009, matching section 6 step 1. | rcpchgrowth who_2007_children.json |
+| 5b | WHO 2007 merged NCHS 1977 data with the under-5 sample using BCPE | unverifiable | Consistent with my background knowledge of de Onis 2007, but the primary source was not reached. | doaj / Bull WHO (blocked) |
+| 6 | ALSPAC SITAR N = 5,707: APHV 13.6 (0.9) / 11.7 (0.8); PHV 10.0 (1.1) / 7.7 (0.8) | unverifiable | PMC blocked, no search budget. Only used as a literature comparison, not in code. | PMC6171559 (blocked) |
+| 7 | Mei 2004: 32% / 13-15% / 2-10% cross 2 major percentiles | unverifiable | PubMed blocked. Not used numerically in code (k(t) is an assumption). | PubMed 15173545 (blocked) |
+| 8 | Wright & Cheetham 1999: slope 0.51; 90% within 1.4 SDS | unverifiable | BMJ blocked. Feeds the mid-parental plausibility band (warning only). | adc.bmj.com 81:257 (blocked) |
+| 9 | BLSA: loss from about 30 y; 3 / 5 cm by 70 y, 5 / 8 cm by 80 y; artefactual BMI +0.7 / +1.6 by 70 y | unverifiable | PubMed blocked. [inference] The BMI artefact is arithmetically plausible: a 5 cm loss from 163 cm at BMI 25 gives +1.6. This claim calibrates the LOSS_RATE table, so it matters most among the unverified ones. | PubMed 10547143 (blocked) |
+| 10 | Gothenburg 70→95 y: height −4.0 / −4.9 cm, weight −3.2 / −5.1 kg | unverifiable | nature.com blocked. | EJCN 1600852 (blocked) |
+| 11 | Sitting height falls with age (r = −0.37 to −0.41); leg length age-independent | unverifiable | Springer blocked. This is the basis for applying loss to the trunk only. | doi 10.1007/s00198-003-1496-y (blocked) |
+| 12 | OFC medians: WHO boys 34.5 / 46.1 / 50.7; UK90 boys 52.75 (5 y), 57.26 (18 y); girls WHO 33.9 / 44.9 / 49.9; UK90 51.7 (5 y), 55.5 (17 y); UK90 about 2 cm above WHO at 4-5 y | confirmed | [fetched; re-computed] 34.46 / 46.07 / 50.74; 52.75 / 57.26; 33.88 / 44.90 / 49.92; 51.68 / 55.52. Gap: 2.02 (4 y) and 2.01 (5 y) boys; 1.8 (4 y) and 1.76 (5 y) girls. UK90 OFC ends at 18 y (boys) and 17 y (girls). | rcpchgrowth who_infants/who_children/uk90_child.json |
+| 13 | Farkas 1992: head height adult at about 13 y (113.3 / 109.8 mm); mandible height 66.6% at 1 y; face height matures at 15 y (boys), about 2 y earlier (girls) | unverifiable | Publisher blocked. Only used for the proposed head-height model, which is flagged as to be fitted. | doi 10.1597/1545-1569… (blocked) |
+| 14 | Berkeley r(h, adult): 0.33 / 0.55 (1 y), 0.73 / 0.71 (3 y), 0.82 / 0.78 (8 y), 0.70 (boys 14 y) / 0.68 (girls 12 y), 0.98 / 1.00 (18 y); 0.58 / 1.38 % per year of APHV at 8 y | confirmed | [fetched; re-computed] All r values reproduced exactly; mean % adult also matches (42.3, 53.7, 72.3, 84.5, 92.1, 99.4 boys). The lag slope at 8 y: girls −1.38 reproduced, boys −0.54 vs −0.58, which depends on the APHV estimate. Caveat: r at 16-18 y is inflated, because the adult height (h1) is fitted to the same series. | cran/sitar berkeley.rda |
+| 15 | Luffy pins (17 y 172, 19 y 174) → adult 174.34 cm, Δ +0.90 y; 120.2 (7 y), 134.4 (10 y), 156.4 (14 y) | confirmed | [fetched; re-computed] Re-implemented frac_adult / bio_age / PB_INDIV / RAMP from the notes on independently downloaded WHO LMS. Result: adult 174.34, Δ 0.90, heights 120.2 / 134.4 / 143.6 / 156.4 / 163.5 / 168.9 / 174.3, APHV 14.13, PHV 7.31 — all match. The single-pin takeaway values (120.7 / 135.6 / 161.0) differ from the two-pin ones by design. | rcpchgrowth LMS + notes' code |
+| 16 | Code licences: anthro GPL-3, anthroplus GPL (≥ 3), rcpchgrowth AGPL-3.0 | confirmed | [fetched] DESCRIPTION files and wheel METADATA (License-Expression: AGPL-3.0-or-later). sitar and NHANES packages are GPL (>= 2). | GitHub DESCRIPTION files; PyPI wheel |
